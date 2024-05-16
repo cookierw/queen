@@ -279,9 +279,9 @@ v8 v8_zeros(int amount) {
 }
 
 void v8_push_u32(v8* v, uint32_t element) {
-    if (v->size == v->capacity + 1) {
+    if (v->size == v->capacity || v->size + 3 >= v->capacity) {
         v8_resize(v, v->capacity * 2);
     }
     v->data[v->size] = element;
-    v->size += 2;
+    v->size += 4;
 }

