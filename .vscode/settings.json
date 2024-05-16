@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "libusb.h": "c",
+        "unistd.h": "c",
+        "time.h": "c",
+        "compare": "c",
+        "cstdint": "c",
+        "cstdlib": "c",
+        "vectors.h": "c",
+        "genvector.h": "c",
+        "stdbool.h": "c",
+        "config.h": "c",
+        "vector.h": "c"
+    }
+}
