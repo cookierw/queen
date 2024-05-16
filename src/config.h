@@ -50,4 +50,4 @@ v8 prepare_shellcode(char* filename, v64* constants);
 v8 usb_rop_callbacks(uint64_t address, uint64_t func_gadget, vcb callbacks);
 v8 asm_arm64_x7_trampoline(uint64_t dest);
 uint32_t asm_arm64_branch(uint64_t src, uint64_t dest);
-v8 create_overwrite(uint64_t nop_gadget, uint64_t addr1, uint64_t addr2, uint32_t end);
+v8 create_overwrite(uint64_t nop_gadget, uint64_t addr);
