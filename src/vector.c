@@ -271,14 +271,14 @@ v8 v8_range_of(v8* v, int start) {
 v8 v8_zeros(int amount) {
     v8 v;
     v.data = malloc(amount);
-    memset(v.data, 0, amount);
+    memset(v.data, '\0', amount);
     v.size = amount;
     v.capacity = amount;
     return v;
 }
 
 void v8_push_u32(v8* v, uint32_t element) {
-    if (v->size == v->capacity || v->size + 3 >= v->capacity) {
+    if (v->size == v->capacity || v->size + 4 >= v->capacity) {
         v8_resize(v, v->capacity * 2);
     }
     v->data[v->size] = element;

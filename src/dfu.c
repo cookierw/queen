@@ -125,7 +125,10 @@ int async_ctrl_transfer(
     return status;
 }
 
-void transfer_cb(struct libusb_transfer* transfer) {}
+void transfer_cb(struct libusb_transfer* transfer) {
+    int* completed = (int*)transfer->user_data;
+    *completed = 1;
+}
 
 void transfer_wait_for_completion(struct libusb_transfer* transfer) {
     int r, *completed = (int *)transfer->user_data;
@@ -134,12 +137,11 @@ void transfer_wait_for_completion(struct libusb_transfer* transfer) {
     while (!*completed) {
         r = libusb_handle_events_completed(ctx, completed);
         if (r < 0) {
-            if (r == LIBUSB_ERROR_INTERRUPTED)
-            continue;
+            if (r == LIBUSB_ERROR_INTERRUPTED) { continue; }
             libusb_cancel_transfer(transfer);
             continue;
         }
-        if (NULL == transfer->dev_handle) {
+        if (transfer->dev_handle == NULL) {
             /* transfer completion after libusb_close() */
             transfer->status = LIBUSB_TRANSFER_NO_DEVICE;
             *completed = 1;
@@ -152,12 +154,11 @@ int my_control_transfer(
     uint16_t wIndex, uint16_t wLength, unsigned char* data, 
     unsigned int timeout, unsigned char* user_data
 ) {
-    unsigned char* buffer;
+    unsigned char* buffer  = (unsigned char*)malloc(LIBUSB_CONTROL_SETUP_SIZE + wLength);
     int completed = 0;
     int status = 0;
     struct libusb_transfer* transfer = libusb_alloc_transfer(0);
 
-    buffer = (unsigned char*)malloc(LIBUSB_CONTROL_SETUP_SIZE + wLength);
     if (!buffer) {
         printf("[!] Out of memory!\n");
         libusb_free_transfer(transfer);
@@ -167,7 +168,7 @@ int my_control_transfer(
     libusb_fill_control_setup(buffer, bmRequestType, bRequest, wValue, wIndex, wLength);
     
     if ((bmRequestType & LIBUSB_ENDPOINT_DIR_MASK) == LIBUSB_ENDPOINT_OUT) {
-        memcpy(buffer + LIBUSB_CONTROL_SETUP_SIZE, data, wLength);
+        memset(buffer + LIBUSB_CONTROL_SETUP_SIZE, data, wLength);
     }
 
     libusb_fill_control_transfer(transfer, handle, buffer, transfer_cb, &completed, timeout);
@@ -182,19 +183,22 @@ int my_control_transfer(
     transfer_wait_for_completion(transfer);
 
     if (data && (bmRequestType & LIBUSB_ENDPOINT_DIR_MASK) == LIBUSB_ENDPOINT_OUT) {
-        memcpy(data, libusb_control_transfer_get_data(transfer), transfer->actual_length);
+        memset(data, libusb_control_transfer_get_data(transfer), transfer->actual_length);
     }
 
     // Populate user_data
     unsigned char* out_data = libusb_control_transfer_get_data(transfer);
-    memcpy(user_data, out_data, transfer->actual_length);
+    memset(user_data, out_data, transfer->actual_length);
 
-    free(buffer);
-    free(out_data);
-    buffer = NULL;
-    out_data = NULL;
+    // free(buffer);
+    // free(out_data);
+    // buffer = NULL;
+    // out_data = NULL;
+    // int status = transfer->status;
 
-    return transfer->status;
+    // libusb_free_transfer(transfer);
+
+    return 0;
 }
 
 // def libusb1_no_error_ctrl_transfer(device, bmRequestType, bRequest, wValue, wIndex, data_or_wLength, timeout):
@@ -202,9 +206,9 @@ int no_error_ctrl_transfer(
     uint8_t bmRequestType, uint8_t bRequest, uint16_t wValue, 
     uint16_t wIndex, unsigned char* data, int length, unsigned int timeout
 ) {
-    unsigned char* response = malloc(length);
+    unsigned char* response = malloc(0x800);
 
-    libusb_control_transfer(handle, bmRequestType, bRequest, wValue, wIndex, data, length, timeout);
+    my_control_transfer(bmRequestType, bRequest, wValue, wIndex, length, data, timeout, response);
 
     free(response);
     return 0;
