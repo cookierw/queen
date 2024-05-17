@@ -63,5 +63,5 @@ void v64_append(v64* dest, v64 source);
 void  v8_append(v8*  dest,  v8 source);
 void v8_push_u32(v8* v, uint32_t element);
 v8 v64_convert_v8(v64 source);
-v8 v8_range_of(v8* v, int start, int end);
+v8 v8_range_of(v8* v, int start);
 v8 v8_zeros(int amount);

