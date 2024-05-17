@@ -109,7 +109,7 @@ payload_config get_config(int cpid) {
 
 v8 prepare_shellcode(char* filename, v64* constants) {
     char* ftype = ".bin";
-    char* path = malloc(sizeof(filename) + 8); // "bin/" + ".bin" = 8
+    char* path = malloc(40); // need better way to alloc dynamically
     int width = 0; 
     if (strstr(filename, "arm64") != NULL) {
         // Arm64
@@ -140,7 +140,6 @@ v8 prepare_shellcode(char* filename, v64* constants) {
     rewind(fp);
 
     fread(shellcode.data, file_size, sizeof(uint64_t), fp);
-    fclose(fp);
 
     // Replace placeholders in shellcode with device-specific ones provided
     uint64_t placeholder_offset = file_size - width * constants->size;
@@ -171,6 +170,7 @@ v8 prepare_shellcode(char* filename, v64* constants) {
     }
 
     free(path);
+    fclose(fp);
     fp = NULL;
     path = NULL;
 
@@ -178,7 +178,7 @@ v8 prepare_shellcode(char* filename, v64* constants) {
 }
 
 v8 usb_rop_callbacks(uint64_t address, uint64_t func_gadget, vcb callbacks) {
-    v64 data = v64_new(8);
+    v64 data = v64_new(448);
 
     for (int i = 0; i < callbacks.size - 1; i += 5) {
         v64 block1 = v64_new(1);

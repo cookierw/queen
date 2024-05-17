@@ -15,7 +15,7 @@ static libusb_context* ctx = NULL;
 libusb_device_handle* handle = NULL;
 libusb_device* device = NULL;
 struct libusb_device_descriptor desc;
-char* serial_number;
+unsigned char serial_number[120];
 
 void init_ctx() {
     int status;
@@ -31,40 +31,27 @@ void exit_ctx() {
 }
 
 void aquire_device() {
-    // if (!ctx) { libusb_init(&ctx); }
-    // handle = libusb_open_device_with_vid_pid(ctx, VENDOR_ID, PRODUCT_ID);
-    libusb_device** devices;
-    int count = libusb_get_device_list(ctx, &devices);
+    if (!ctx) { libusb_init(&ctx); }
+    handle = libusb_open_device_with_vid_pid(ctx, VENDOR_ID, PRODUCT_ID);
 
-    for (int i = 0; i < count; i++) {
-        libusb_device *test_device = devices[i];
-        struct libusb_device_descriptor test_desc = {0};
-
-        int rc = libusb_get_device_descriptor(test_device, &test_desc);
-        assert(rc == 0);
-
-        printf("Vendor:Device = %04x:%04x\n", test_desc.idVendor, test_desc.idProduct);
+    if (handle) {
+        printf("[x]\tDevice Found!\n");
+    } else {
+        printf("[!] Unable to get device. Ensure you are in DFU mode.\n");
+        exit(EXIT_FAILURE);
     }
 
-    // if (handle) {
-    //     printf("[x]\tDevice Found!\n");
-    // } else {
-    //     printf("[!] Unable to get device. Ensure you are in DFU mode.\n");
-    //     exit(EXIT_FAILURE);
-    // }
+    device = libusb_get_device(handle);
 
-    // device = libusb_get_device(handle);
-
-    // if (libusb_claim_interface(handle, 0) != 0) {
-    //     printf("Failed to claim interface, aborting.\n");
-    //     abort();
-    // }
+    if (libusb_claim_interface(handle, 0) != 0) {
+        printf("Failed to claim interface, aborting.\n");
+        abort();
+    }
 
     // libusb_get_device_descriptor(device, &desc);
 
-    serial_number = malloc(1024);
     // libusb_get_string_descriptor_ascii(handle, desc.iSerialNumber, 
-    //                                     (unsigned char*)serial_number, 
+    //                                     serial_number, 
     //                                     sizeof(serial_number));
 }
 
@@ -257,6 +244,12 @@ int usb_req_no_leak() {
     return no_error_ctrl_transfer(0x80, 6, 0x304, 0x40A, NULL, 0x41, 10);
 }
 
-char* get_serial_string() {
+unsigned char* get_serial_string() {
+    libusb_get_device_descriptor(device, &desc);
+
+    libusb_get_string_descriptor_ascii(handle, desc.iSerialNumber, 
+                                        &serial_number, 
+                                        120);
+
     return serial_number;
 }

@@ -40,4 +40,4 @@ int usb_req_stall();
 int usb_req_leak();
 int usb_req_no_leak();
 
-char* get_serial_string();
+unsigned char* get_serial_string();

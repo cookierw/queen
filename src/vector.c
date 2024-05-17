@@ -259,11 +259,10 @@ v8 v64_convert_v8(v64 source) {
 
 v8 v8_range_of(v8* v, int start, int end) {
     v8 new;
-    int size_diff = start + end;
     uint8_t* data = malloc(v->size);
-    memcpy(data, v->data + start, v->size - size_diff);
+    memmove(data, &v->data[start], v->size);
     new.data = data;
-    new.size = v->size - size_diff;
+    new.size = v->size;
     new.capacity = v->size;
 
     return new;
