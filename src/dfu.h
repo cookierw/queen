@@ -4,6 +4,7 @@
 #include <libusb-1.0/libusb.h>
 
 void init_ctx();
+void exit_ctx();
 void aquire_device();
 void release_device();
 void reset_device();

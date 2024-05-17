@@ -229,7 +229,7 @@ void v8_resize(v8*  v, int new_capacity) {
 
 void v64_append(v64* dest, v64 source) {
     int new_size = dest->size + source.size;
-    uint64_t* data = malloc(sizeof(uint64_t) * new_size);
+    uint64_t* data = malloc(sizeof(uint64_t) * new_size + 1);
     memcpy(data, dest->data, sizeof(uint64_t) * dest->size);
     memcpy(data + dest->size, source.data, sizeof(uint64_t) * source.size);
     free(dest->data);
@@ -240,7 +240,7 @@ void v64_append(v64* dest, v64 source) {
 
 void v8_append(v8* dest, v8 source) {
     int new_size = dest->size + source.size;
-    uint8_t* data = malloc(sizeof(uint8_t) * new_size);
+    uint8_t* data = malloc(sizeof(uint8_t) * new_size + 1);
     memcpy(data, dest->data, sizeof(uint8_t) * dest->size);
     memcpy(data + dest->size, source.data, sizeof(uint8_t) * source.size);
     free(dest->data);

